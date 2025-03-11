@@ -7,7 +7,7 @@ app = Flask(__name__)
 # رمز التحقق
 VERIFY_TOKEN = "bilal2481632"
 
-# ضع رمز الوصول لصفحتك هنا (ستجده في إعدادات فيسبوك)
+# ضع رمز الوصول لصفحتك هنا (استبدله بالقيمة الصحيحة)
 PAGE_ACCESS_TOKEN = "EAAZAPGPLiVC0BO581Y75yBUmOVW2pPr5CZAEKwPPxx5UBjVxFXNzwKCOHBBUwizxyhdzPZCV5mGoEejEKrRvwcy7spMXST7ut1Tyd8P99yYrCAZAd5UsOiWjpyCiq2JpN0QhAc325fH0wZCzHD2nIUHGfoz8am3U8XKSAj3EIfRegCJhlfyOcHW32hbosQ3NJSsRfgv4lUTlDTJnLQO85jrlR6AZDZD"
 
 @app.route("/webhook", methods=["GET"])
@@ -31,9 +31,28 @@ def webhook():
                 if messaging_event.get("message"):  # إذا كانت رسالة
                     sender_id = messaging_event["sender"]["id"]
                     message_text = messaging_event["message"]["text"]
-                    send_message(sender_id, f"👋 مرحبًا! لقد قلت: {message_text}")
+                    
+                    # التحقق من اللغة العربية
+                    if not any("\u0600" <= char <= "\u06FF" for char in message_text):
+                        send_message(sender_id, "🚨 من فضلك تواصل معنا باللغة العربية حتى أتمكن من فهم طلبك بشكل أفضل. شكرًا لتفهمك! 😊")
+                    else:
+                        process_message(sender_id, message_text)
     
     return "Message received", 200
+
+def process_message(sender_id, message_text):
+    """معالجة الرسائل والردود"""
+    if message_text.strip() in ["مرحبا", "السلام عليكم", "اهلا"]:
+        response = "👋 مرحبًا بك! كيف يمكنني مساعدتك اليوم؟ إليك قائمة الخيارات:\n\n"
+        response += "1️⃣ استفسار عن المنتجات 🛍️\n"
+        response += "2️⃣ تقديم طلب شراء 📦\n"
+        response += "3️⃣ تتبع الطلب 🚚\n"
+        response += "4️⃣ التحدث مع الدعم الفني 🛠️\n"
+        response += "يرجى إرسال رقم الخيار الذي تريده."
+    else:
+        response = f"👋 لقد قلت: {message_text}"
+    
+    send_message(sender_id, response)
 
 def send_message(recipient_id, message_text):
     """إرسال رسالة إلى المستخدم"""
@@ -51,7 +70,5 @@ def send_message(recipient_id, message_text):
 
 if __name__ == "__main__":
     import os
-
-port = int(os.environ.get("PORT", 5000))  # يأخذ المنفذ من Render أو يستخدم 5000 كافتراضي
-app.run(host="0.0.0.0", port=port)
-
+    port = int(os.environ.get("PORT", 5000))  # يأخذ المنفذ من Render أو يستخدم 5000 كافتراضي
+    app.run(host="0.0.0.0", port=port)
