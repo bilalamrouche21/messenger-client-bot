@@ -51,3 +51,8 @@ def send_message(recipient_id, message_text):
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
+    import os
+
+port = int(os.environ.get("PORT", 5000))  # يأخذ المنفذ من Render أو يستخدم 5000 كافتراضي
+app.run(host="0.0.0.0", port=port)
+
